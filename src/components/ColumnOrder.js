@@ -1,15 +1,14 @@
 import React, { useMemo } from "react";
 import {
   useTable,
-  useRowSelect,
+  useColumnOrder,
 } from "react-table/dist/react-table.development";
 import MOCK_DATA from "./MOCK_DATA.json";
-import { GROUPED_COLUMNS } from "./columns";
+import { COLUMNS } from "./columns";
 import "./table.css";
-import { Checkbox } from "./CheckBox";
 
-const RowSelection = () => {
-  const columns = useMemo(() => GROUPED_COLUMNS, []);
+const ColumnOrder = () => {
+  const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => MOCK_DATA, []);
 
   const tableInstance = useTable(
@@ -17,27 +16,7 @@ const RowSelection = () => {
       columns,
       data,
     },
-    useRowSelect,
-    (hooks) => {
-      hooks.visibleColumns.push((columns) => [
-        {
-          id: "selection",
-
-          Header: ({ getToggleAllRowsSelectedProps }) => (
-            <div>
-              <Checkbox {...getToggleAllRowsSelectedProps()} />
-            </div>
-          ),
-
-          Cell: ({ row }) => (
-            <div>
-              <Checkbox {...row.getToggleRowSelectedProps()} />
-            </div>
-          ),
-        },
-        ...columns,
-      ]);
-    }
+    useColumnOrder
   );
 
   const {
@@ -47,14 +26,44 @@ const RowSelection = () => {
     rows,
     prepareRow,
     footerGroups,
-    selectedFlatRows,
-    state: { selectedRowIds },
+    setColumnOrder,
   } = tableInstance;
 
-  const firstPageRows = rows.slice(0, 10);
+//   const changeOrder = () => {
+//     setColumnOrder([
+//       "id",
+//       "first_name",
+//       "last_name",
+//       "phone",
+//       "country",
+//       "date_of_birth",
+//     ]);
+//   };
 
+function shuffle(arr) {
+    arr = [...arr]
+    const shuffled = []
+    while (arr.length) {
+        const rand = Math.floor(Math.random() * arr.length)
+        shuffled.push(arr.splice(rand, 1)[0])
+    }
+    return shuffled
+}
+
+const changeOrder = () => {
+    setColumnOrder(shuffle([
+        "id",
+        "first_name",
+        "last_name",
+        "phone",
+        "country",
+        "date_of_birth",
+    ]))
+  }
+  
   return (
     <>
+      <button onClick={changeOrder}>Change Column Order</button>
       <table {...getTableProps()}>
         <thead>
           {headerGroups.map((group) => (
@@ -66,7 +75,7 @@ const RowSelection = () => {
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {firstPageRows.map((row, i) => {
+          {rows.map((row, i) => {
             prepareRow(row);
             return (
               <tr {...row.getRowProps()}>
@@ -89,22 +98,8 @@ const RowSelection = () => {
           ))}
         </tfoot>
       </table>
-      <div className="left_side">
-        <p>Selected Rows: {Object.keys(selectedRowIds).length}</p>
-        <pre>
-          <code>
-            {JSON.stringify(
-              {
-                selectedRows: selectedFlatRows.map((row) => row.original),
-              },
-              null,
-              2
-            )}
-          </code>
-        </pre>
-      </div>
     </>
   );
 };
 
-export default RowSelection;
+export default ColumnOrder;
